@@ -1,8 +1,12 @@
+import os
+import asyncio
+import requests
 import discord
 from discord import app_commands
-import requests
-import asyncio
 
+# ----------------------------------
+# 환경 변수에서 토큰 가져오기
+# ----------------------------------
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 # BTC 가격 가져오기
@@ -21,18 +25,28 @@ def format_krw(amount):
 def format_btc(amount):
     return f"{amount:.8f}"
 
+# ----------------------------------
+# 디스코드 봇 클래스
+# ----------------------------------
 class MyBot(discord.Client):
     def __init__(self):
-        super().__init__(intents=discord.Intents.default())
+        intents = discord.Intents.default()
+        super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
+        self.status_task = None
+
+    async def setup_hook(self):
+        # 봇이 준비되면 상태창 업데이트 루프 시작
+        self.status_task = asyncio.create_task(self.update_status_loop())
 
     async def on_ready(self):
         print(f"{self.user} 로그인 완료!")
         await self.tree.sync()
         print("슬래시 명령어 등록 완료")
 
-        # 상태창 업데이트 루프
-        while True:
+    async def update_status_loop(self):
+        await self.wait_until_ready()
+        while not self.is_closed():
             price = get_btc_price()
             await self.change_presence(
                 activity=discord.Activity(
@@ -86,4 +100,7 @@ async def to_btc(interaction: discord.Interaction, amount: float, premium: float
 # ----------------------------------
 # 봇 실행
 # ----------------------------------
+if not TOKEN:
+    raise RuntimeError("DISCORD_TOKEN 환경 변수가 설정되지 않았습니다.")
+
 bot.run(TOKEN)
