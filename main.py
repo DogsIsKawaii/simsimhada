@@ -38,6 +38,16 @@ def format_bitcoin_units(units: int) -> str:
     """정수 bitcoin 수량을 3자리마다 콤마 넣어서 문자열로 포맷"""
     return f"{units:,}"
 
+def format_premium(p: float) -> str:
+    """프리미엄/할인 표기용 문자열 생성
+       - p < 0  → 할인
+       - p >= 0 → 프리미엄 (0도 프리미엄으로 표기)
+    """
+    if p < 0:
+        return f"할인 {abs(p):.2f}%"
+    else:
+        return f"프리미엄 {p:.2f}%"
+
 # ----------------------------------
 # 디스코드 봇 클래스
 # ----------------------------------
@@ -85,7 +95,8 @@ async def btc(interaction: discord.Interaction):
         ephemeral=True
     )
 
-# /to_krw : bitcoin(정수) → 원화 변환 (프리미엄 필수)
+# /to_krw : bitcoin(정수) → 원화 변환
+# amount는 정수 bitcoin, premium은 기본값 0 (입력 안 하면 0으로 계산)
 @bot.tree.command(name="to_krw", description="bitcoin 단위를 원화로 변환합니다.")
 @app_commands.describe(
     amount="bitcoin 수량 (예: 2100)",
@@ -93,12 +104,12 @@ async def btc(interaction: discord.Interaction):
 )
 async def to_krw(
     interaction: discord.Interaction,
-    amount: int,        # ✅ 정수 입력: bitcoin 단위
-    premium: float
+    amount: int,              # 정수 bitcoin 단위
+    premium: float = 0.0      # ✅ 기본값 0
 ):
     price = get_btc_price()
 
-    # 정수 bitcoin → BTC 로 변환
+    # 정수 bitcoin → BTC
     btc_amount = amount / BITCOIN_PER_BTC
 
     krw = btc_amount * price
@@ -106,20 +117,21 @@ async def to_krw(
 
     await interaction.response.send_message(
         f"₿{format_bitcoin_units(amount)} → 💵 {format_krw(krw_with_premium)} 원 "
-        f"(프리미엄 {premium:+.2f}%)",
+        f"({format_premium(premium)})",
         ephemeral=True
     )
 
-# /to_btc : 원화 → bitcoin(정수) 변환 (프리미엄 필수)
+# /to_btc : 원화 → bitcoin(정수) 변환
+# premium은 기본값 0 (입력 안 하면 0으로 계산)
 @bot.tree.command(name="to_btc", description="원화를 bitcoin 단위로 변환합니다.")
 @app_commands.describe(
     amount="원화 금액",
-    premium="프리미엄 %"
+    premium="프리미엄 % (음수 입력 시 할인)"
 )
 async def to_btc(
     interaction: discord.Interaction,
-    amount: float,      # 원화 금액
-    premium: float
+    amount: float,            # 원화 금액
+    premium: float = 0.0      # ✅ 기본값 0
 ):
     price = get_btc_price()
 
@@ -132,7 +144,7 @@ async def to_btc(
 
     await interaction.response.send_message(
         f"💵 {format_krw(amount)} 원 → ₿{format_bitcoin_units(units)} "
-        f"(프리미엄 {premium:+.2f}%)",
+        f"({format_premium(premium)})",
         ephemeral=True
     )
 
