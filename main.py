@@ -88,8 +88,8 @@ async def btc(interaction: discord.Interaction):
 # /to_krw : bitcoin(정수) → 원화 변환 (프리미엄 필수)
 @bot.tree.command(name="to_krw", description="bitcoin 단위를 원화로 변환합니다.")
 @app_commands.describe(
-    amount="bitcoin 수량 (정수, 예: 35023)",
-    premium="프리미엄 %"
+    amount="bitcoin 수량 (예: 2100)",
+    premium="프리미엄 % (음수 입력 시 할인)"
 )
 async def to_krw(
     interaction: discord.Interaction,
