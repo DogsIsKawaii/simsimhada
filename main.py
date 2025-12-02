@@ -198,8 +198,8 @@ async def to_btc(
         ephemeral=True
     )
 
-# ✅ /inspiration : 오렌지 홀릭을 채워줄 단어를 랜덤 출력합니다.
-@bot.tree.command(name="inspiration", description="랜덤 인스피레이션(어록)을 출력합니다.")
+# ✅ /inspiration : 여러 문장 중 랜덤 하나 출력
+@bot.tree.command(name="inspiration", description="오렌지 홀릭을 채워줄 단어를 랜덤 출력합니다.")
 async def inspiration(interaction: discord.Interaction):
     if not is_allowed_guild(interaction):
         await interaction.response.send_message(
