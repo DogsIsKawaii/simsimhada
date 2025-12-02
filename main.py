@@ -10,6 +10,15 @@ from discord import app_commands
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 # ----------------------------------
+# 사용을 허용할 디스코드 서버(길드) ID
+# ----------------------------------
+ALLOWED_GUILD_ID = 1316677392517042237  # 서버 ID
+
+def is_allowed_guild(interaction: discord.Interaction) -> bool:
+    """이 상호작용이 허용된 서버에서 온 것인지 확인"""
+    return interaction.guild is not None and interaction.guild.id == ALLOWED_GUILD_ID
+
+# ----------------------------------
 # 가격/포맷 관련 함수
 # ----------------------------------
 
@@ -78,7 +87,7 @@ class MyBot(discord.Client):
                     name=f"BTC {format_krw(price)}원 (업비트 기준)"
                 )
             )
-            await asyncio.sleep(10)
+            await asyncio.sleep(60)  # 1분마다 업데이트
 
 bot = MyBot()
 
@@ -89,6 +98,13 @@ bot = MyBot()
 # /btc : 현재 BTC 시세 (원화)
 @bot.tree.command(name="btc", description="현재 비트코인 시세를 조회합니다.")
 async def btc(interaction: discord.Interaction):
+    if not is_allowed_guild(interaction):
+        await interaction.response.send_message(
+            "이 봇은 지정된 서버에서만 사용할 수 있어요.",
+            ephemeral=True
+        )
+        return
+
     price = get_btc_price()
     await interaction.response.send_message(
         f"💰 현재 비트코인 가격: {format_krw(price)}원",
@@ -105,8 +121,15 @@ async def btc(interaction: discord.Interaction):
 async def to_krw(
     interaction: discord.Interaction,
     amount: int,              # 정수 bitcoin 단위
-    premium: float = 0.0      # ✅ 기본값 0
+    premium: float = 0.0      # 기본값 0
 ):
+    if not is_allowed_guild(interaction):
+        await interaction.response.send_message(
+            "이 봇은 지정된 서버에서만 사용할 수 있어요.",
+            ephemeral=True
+        )
+        return
+
     price = get_btc_price()
 
     # 정수 bitcoin → BTC
@@ -131,8 +154,15 @@ async def to_krw(
 async def to_btc(
     interaction: discord.Interaction,
     amount: float,            # 원화 금액
-    premium: float = 0.0      # ✅ 기본값 0
+    premium: float = 0.0      # 기본값 0
 ):
+    if not is_allowed_guild(interaction):
+        await interaction.response.send_message(
+            "이 봇은 지정된 서버에서만 사용할 수 있어요.",
+            ephemeral=True
+        )
+        return
+
     price = get_btc_price()
 
     # 원화 → BTC
