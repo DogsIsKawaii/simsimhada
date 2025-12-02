@@ -1,6 +1,7 @@
 import os
 import asyncio
 import requests
+import random
 import discord
 from discord import app_commands
 
@@ -58,6 +59,27 @@ def format_premium(p: float) -> str:
         return f"프리미엄 {p:.2f}%"
 
 # ----------------------------------
+# 랜덤 인스피레이션(영감을 주는 문장) 리스트
+# ----------------------------------
+INSPIRATION_MESSAGES = [
+    "📜 Inspiration 1\n만약 당신이 믿지 않거나 이해하지 못한다면, 설득할 시간이 없습니다. -사토시 나카모토-",
+    "📜 Inspiration 2\n은행이 필요 없는 새로운 전자 화폐 -비트코인 백서 중-",
+    "📜 Inspiration 3\nThe Times 2009년 1월 3일, 총리, 두 번째 은행 구제금융 직전 -비트코인 제네시스 블록 메시지-",
+    "📜 Inspiration 4\n두 번째로 좋은 것은 없다. -마이클 세일러-",
+    "📜 Inspiration 5\n사람들은 자신에게 합당한 가격에 비트코인을 가진다. -마이클 세일러-",
+    "📜 Inspiration 6\n겸손함을 유지하고 비트코인을 꾸준히 모아라. -비트코인과 관련된 명언-",
+    "📜 Inspiration 7\n네 키가 아니면, 네 비트코인이 아니다. -비트코인과 관련된 명언-",
+    "📜 Inspiration 8\n비트코인: 개인 대 개인 전자화폐 시스템. -비트코인 백서 제목-",
+    "📜 Inspiration 9\n비트코인의 첫 배포를 알립니다. -사토시 나카모토, 경화가 탄생하는 순간-",
+    "📜 Inspiration 10\n기존 통화의 근본적인 문제는 시스템이 돌아가도록 하는 데 신뢰가 필요하다는 점입니다. -사토시 나카모토-",
+    "📜 Inspiration 11\n언제 일어날지 모르는 중앙 관리형 통화의 인플레이션 리스크에서 탈출하세요! -사토시 나카모토-",
+    "📜 Inspiration 12\n그러니까 비트코인을 갖기 않는 것이 진짜 낭비인 것이죠. -사토시 나카모토-",
+    "📜 Inspiration 13\n저는 제가 남긴 유산이 마음에 듭니다. -할피니-",
+    "📜 Inspiration 14\n비트코인 시스템을 제대로 설명할 수만 있다면 자유주의자들이 꽤나 솔깃하게 생각할 것입니다. -사토시 나카모토-",
+    # 여기다가 원하는 문장 계속 추가해도 됨
+]
+
+# ----------------------------------
 # 디스코드 봇 클래스
 # ----------------------------------
 class MyBot(discord.Client):
@@ -112,7 +134,6 @@ async def btc(interaction: discord.Interaction):
     )
 
 # /to_krw : bitcoin(정수) → 원화 변환
-# amount는 정수 bitcoin, premium은 기본값 0 (입력 안 하면 0으로 계산)
 @bot.tree.command(name="to_krw", description="bitcoin 단위를 원화로 변환합니다.")
 @app_commands.describe(
     amount="bitcoin 수량 (예: 2100)",
@@ -145,7 +166,6 @@ async def to_krw(
     )
 
 # /to_btc : 원화 → bitcoin(정수) 변환
-# premium은 기본값 0 (입력 안 하면 0으로 계산)
 @bot.tree.command(name="to_btc", description="원화를 bitcoin 단위로 변환합니다.")
 @app_commands.describe(
     amount="원화 금액",
@@ -177,6 +197,19 @@ async def to_btc(
         f"({format_premium(premium)})",
         ephemeral=True
     )
+
+# ✅ /inspiration : 오렌지 홀릭을 채워줄 단어를 랜덤 출력합니다.
+@bot.tree.command(name="inspiration", description="랜덤 인스피레이션(어록)을 출력합니다.")
+async def inspiration(interaction: discord.Interaction):
+    if not is_allowed_guild(interaction):
+        await interaction.response.send_message(
+            "이 봇은 지정된 서버에서만 사용할 수 있어요.",
+            ephemeral=True
+        )
+        return
+
+    message = random.choice(INSPIRATION_MESSAGES)
+    await interaction.response.send_message(message, ephemeral=True)
 
 # ----------------------------------
 # 봇 실행
